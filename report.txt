@@ -1,0 +1,11 @@
+To Add 
+
+1) back propagation
+
+Tested functions and classes:
+
+- HiddenLayer() all functions 
+- inputLayer() all functions
+- Model()
+    costFuntion()
+    pridict()
