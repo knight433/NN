@@ -1,11 +1,15 @@
-To Add 
+weights - 
+   [[-0.80377147 -0.63344107]
+   [ 0.43278832 -0.02537794]
+   [-0.71144554  0.79602224]]
+bias - [[-0.20960194 -0.86772309]]
 
-1) back propagation
+weights - 
+   [[ 0.30313998 -0.651056  ]
+   [ 0.11990958 -0.68028781]]
+bias - [[-0.04218223  0.71097538]]
 
-Tested functions and classes:
-
-- HiddenLayer() all functions 
-- inputLayer() all functions
-- Model()
-    costFuntion()
-    pridict()
+weights - 
+   [[-0.13948543 -0.15244189  0.02360036]
+   [ 0.15260582 -0.41243941  0.62087499]]
+bias - [[-0.45757658 -0.6612067   0.39908153]]
