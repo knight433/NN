@@ -58,14 +58,14 @@ class layers:
     def forward(self, input_matrix):
         values = np.dot(input_matrix, self.weight_matrix) + self.bias
         self.neuronValues =  self.apply_activation(values)
+        # print(self.neuronValues) #debugging
         return self.neuronValues
     
 class Model:
 
     #to intiallize the model
-    def __init__(self) -> None:
-        
-        inputNumber = input('enter the input parameters: ') # input nodes
+    def __init__(self,):
+        inputNumber = int(input('enter the input parameters: ')) # input nodes
         self.numberOfLayers = int(input('enter the number of layers: ')) #number of hidden layer and output layer
 
         self.listOfHiddenLayers = []
@@ -134,7 +134,7 @@ class Model:
             pre_w = self.listOfHiddenLayers[i+1].weight_matrix
             newValues = layers.neuronValues
             # print(f'newValues = {i} - {newValues}') #debugging
-            derValues = np.array([layers.compute_derivative(newValues)])
+            derValues = np.array(layers.compute_derivative(newValues))
             cur_gradient = np.array(np.multiply(derValues.T,pre_w))
             pr = np.dot(gradient,cur_gradient.T)
             prevNuronValues = np.array([self.listOfHiddenLayers[i-1].neuronValues])
@@ -164,3 +164,110 @@ class Model:
         layers.weight_matrix = upWeights.T
         layers.bias = layers.bias - learningRate*(pr)
     
+class ModelTest:
+
+    #to intiallize the model
+    def __init__(self,parameters):
+        ind = 0
+        inputNumber = parameters[ind] # input nodes
+        ind += 1
+        self.numberOfLayers = parameters[ind] #number of hidden layer and output layer
+        ind += 1
+        self.listOfHiddenLayers = []
+        self.inLayerObj = inputLayer(inputNumber)
+
+        for i in range(self.numberOfLayers):
+            number_of_input = parameters[ind]
+            ind += 1 
+            numberOfNeurons = parameters[ind]
+            ind += 1
+            activation = parameters[ind]
+            ind += 1
+            hidden_layer_obj = layers(number_of_input,numberOfNeurons,activation)
+
+            self.listOfHiddenLayers.append(hidden_layer_obj)
+            
+            if i == self.numberOfLayers-1:
+                self.numberOfLabels = numberOfNeurons
+
+    def pridict(self,data,ForTraining = False):
+
+        arr = data
+        
+        for layer in self.listOfHiddenLayers:
+            arr = layer.forward(arr)
+
+        if ForTraining:
+            return arr
+
+        pridiction_value = -1
+        pridiction = None
+
+        for i,obj in enumerate(arr[0]):
+            if pridiction_value < obj:
+                pridiction = {'label' : i, 'confidence' : obj}
+        
+        return pridiction
+    
+
+    def view_weights(self):
+        for layer in self.listOfHiddenLayers:
+            print(f'weights \n - {layer.weight_matrix}')
+            print(f'bias - {layer.bias}')
+
+    #backpropagation 
+    def train(self,data,label,learningRate=0.1):
+        print('here') #debugging
+        pridiction = self.pridict(data,ForTraining = True)
+        reqArr =np.array([0 for i in range(self.numberOfLabels)])
+        reqArr[label] = 1
+        costFuntion = sum((pridiction - reqArr)**2)
+
+        pridiction = pridiction - reqArr
+        i = self.numberOfLayers - 1
+
+        layers = self.listOfHiddenLayers[i]
+        gradient = np.array([np.multiply(pridiction,layers.compute_derivative(pridiction))])
+        prevNuronValues = np.array(self.listOfHiddenLayers[i-1].neuronValues)
+        pr = layers.weight_matrix.T - learningRate*(np.dot(gradient.T,prevNuronValues))
+        layers.weight_matrix = pr.T
+        layers.bias = layers.bias - learningRate*(gradient)
+        # print(layers.bias) #debugging
+        i -= 1
+
+        while i:
+            
+            #to get gradient 
+            layers = self.listOfHiddenLayers[i]
+            pre_w = self.listOfHiddenLayers[i+1].weight_matrix
+            newValues = layers.neuronValues
+            # print(f'newValues = {i} - {newValues}') #debugging
+            derValues = np.array(layers.compute_derivative(newValues))
+            cur_gradient = np.array(np.multiply(derValues.T,pre_w))
+            pr = np.dot(gradient,cur_gradient.T)
+            prevNuronValues = np.array(self.listOfHiddenLayers[i-1].neuronValues)
+            
+            #updating weights
+            weights = layers.weight_matrix
+            upWeights = weights.T - learningRate*(np.dot(pr.T,prevNuronValues))
+            layers.weight_matrix = upWeights
+            gradient = pr
+            
+            #updating the bias 
+            layers.bias = layers.bias - learningRate*(pr)
+            # print(layers.bias) #debugging
+
+            i -= 1
+
+        #for input layer - first layer value
+        layer = self.listOfHiddenLayers[0]
+        pre_w = self.listOfHiddenLayers[1].weight_matrix
+        newValues = np.array(layers.neuronValues)
+        derValues = np.array(layers.compute_derivative(newValues))
+        cur_gradient = np.array(np.dot(pre_w,gradient.T))
+        pr = np.multiply(derValues,cur_gradient.T)
+        prevNuronValues = np.array(data)
+        weights = layer.weight_matrix
+        upWeights = weights.T - learningRate*(np.dot(pr.T,prevNuronValues))
+        layers.weight_matrix = upWeights.T
+        layers.bias = layers.bias - learningRate*(pr)
