@@ -56,7 +56,8 @@ class layers:
             return np.ones_like(values)  # Derivative of the identity function is 1
 
     def forward(self, input_matrix):
-        values = np.dot(input_matrix, self.weight_matrix) + self.bias
+        print(f'shapeofIN = {np.shape(input_matrix)}, shapeofWI = {np.shape(self.weight_matrix)}') #debugging
+        values = np.dot(input_matrix,self.weight_matrix) + self.bias
         self.neuronValues =  self.apply_activation(values)
         # print(self.neuronValues) #debugging
         return self.neuronValues
@@ -119,8 +120,8 @@ class Model:
         i = self.numberOfLayers - 1
 
         layers = self.listOfHiddenLayers[i]
-        gradient = np.array([np.multiply(pridiction,layers.compute_derivative(pridiction))])
-        prevNuronValues = np.array([self.listOfHiddenLayers[i-1].neuronValues])
+        gradient = np.multiply(pridiction,layers.compute_derivative(pridiction))
+        prevNuronValues = self.listOfHiddenLayers[i-1].neuronValues
         pr = layers.weight_matrix.T - learningRate*(np.dot(gradient.T,prevNuronValues))
         layers.weight_matrix = pr.T
         layers.bias = layers.bias - learningRate*(gradient)
@@ -128,16 +129,15 @@ class Model:
         i -= 1
 
         while i:
-            
             #to get gradient 
             layers = self.listOfHiddenLayers[i]
             pre_w = self.listOfHiddenLayers[i+1].weight_matrix
             newValues = layers.neuronValues
             # print(f'newValues = {i} - {newValues}') #debugging
-            derValues = np.array(layers.compute_derivative(newValues))
-            cur_gradient = np.array(np.multiply(derValues.T,pre_w))
+            derValues = layers.compute_derivative(newValues)
+            cur_gradient = np.multiply(derValues.T,pre_w)
             pr = np.dot(gradient,cur_gradient.T)
-            prevNuronValues = np.array([self.listOfHiddenLayers[i-1].neuronValues])
+            prevNuronValues = self.listOfHiddenLayers[i-1].neuronValues
             
             #updating weights
             weights = layers.weight_matrix
@@ -154,11 +154,11 @@ class Model:
         #for input layer - first layer value
         layer = self.listOfHiddenLayers[0]
         pre_w = self.listOfHiddenLayers[1].weight_matrix
-        newValues = np.array([layers.neuronValues])
-        derValues = np.array(layers.compute_derivative(newValues))
-        cur_gradient = np.array(np.dot(pre_w,gradient.T))
+        newValues = layers.neuronValue
+        derValues = layers.compute_derivative(newValues)
+        cur_gradient = np.dot(pre_w,gradient.T)
         pr = np.multiply(derValues,cur_gradient.T)
-        prevNuronValues = np.array([data])
+        prevNuronValues = data
         weights = layer.weight_matrix
         upWeights = weights.T - learningRate*(np.dot(pr.T,prevNuronValues))
         layers.weight_matrix = upWeights.T
@@ -227,8 +227,8 @@ class ModelTest:
         i = self.numberOfLayers - 1
 
         layers = self.listOfHiddenLayers[i]
-        gradient = np.array([np.multiply(pridiction,layers.compute_derivative(pridiction))])
-        prevNuronValues = np.array(self.listOfHiddenLayers[i-1].neuronValues)
+        gradient = np.multiply(pridiction,layers.compute_derivative(pridiction))
+        prevNuronValues = self.listOfHiddenLayers[i-1].neuronValues
         pr = layers.weight_matrix.T - learningRate*(np.dot(gradient.T,prevNuronValues))
         layers.weight_matrix = pr.T
         layers.bias = layers.bias - learningRate*(gradient)
@@ -242,14 +242,15 @@ class ModelTest:
             pre_w = self.listOfHiddenLayers[i+1].weight_matrix
             newValues = layers.neuronValues
             # print(f'newValues = {i} - {newValues}') #debugging
-            derValues = np.array(layers.compute_derivative(newValues))
-            cur_gradient = np.array(np.multiply(derValues.T,pre_w))
+            derValues = layers.compute_derivative(newValues)
+            cur_gradient = np.multiply(derValues.T,pre_w)
             pr = np.dot(gradient,cur_gradient.T)
-            prevNuronValues = np.array(self.listOfHiddenLayers[i-1].neuronValues)
+            prevNuronValues = self.listOfHiddenLayers[i-1].neuronValues
             
             #updating weights
             weights = layers.weight_matrix
             upWeights = weights.T - learningRate*(np.dot(pr.T,prevNuronValues))
+            print(f'wei = {np.shape(upWeights)}') #debugging
             layers.weight_matrix = upWeights
             gradient = pr
             
@@ -262,11 +263,12 @@ class ModelTest:
         #for input layer - first layer value
         layer = self.listOfHiddenLayers[0]
         pre_w = self.listOfHiddenLayers[1].weight_matrix
-        newValues = np.array(layers.neuronValues)
-        derValues = np.array(layers.compute_derivative(newValues))
-        cur_gradient = np.array(np.dot(pre_w,gradient.T))
+        newValues = self.listOfHiddenLayers[1].neuronValues
+        print(f'new = {np.shape(newValues)}') #debugging
+        derValues = layers.compute_derivative(newValues)
+        cur_gradient = np.dot(pre_w,gradient.T)
         pr = np.multiply(derValues,cur_gradient.T)
-        prevNuronValues = np.array(data)
+        prevNuronValues = data
         weights = layer.weight_matrix
         upWeights = weights.T - learningRate*(np.dot(pr.T,prevNuronValues))
         layers.weight_matrix = upWeights.T
